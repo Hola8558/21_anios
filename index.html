@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrusel De 21 años...</title>
+    <title>Carrusel Espacial Holográfico</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -106,12 +106,16 @@
             overflow: hidden;
             border-bottom: 1px solid cyan;
             position: relative;
+            background-color: rgba(0, 0, 0, 0.6); /* Fondo para cuando la imagen no llena todo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .card-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Esto asegura que la imagen llene el cuadro sin deformarse */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ajusta la imagen completa sin recortar ni deformar */
             opacity: 0.9;
         }
 
@@ -256,8 +260,8 @@
     <!-- Pantalla de Inicio -->
     <div id="start-overlay">
         <h1 class="text-3xl md:text-5xl mb-6 font-bold tracking-widest text-center px-4" style="text-shadow: 0 0 10px cyan;">SISTEMA DE VISUALIZACIÓN</h1>
-        <p class="mb-8 text-center max-w-md text-cyan-200 opacity-80 font-light">Iniciando protocolo cum</p>
-        <button class="start-btn rounded" onclick="initExperience()">INICIAR</button>
+        <p class="mb-8 text-center max-w-md text-cyan-200 opacity-80 font-light">Iniciando protocolo de revisión orbital.</p>
+        <button class="start-btn rounded" onclick="initExperience()">INICIAR SISTEMA</button>
     </div>
 
     <!-- Escena 3D -->
@@ -275,7 +279,7 @@
             <div class="w-full text-center">
                 <div class="flex items-center justify-center mb-2 text-xs md:text-sm tracking-widest">
                     <span id="status-light" class="status-light"></span>
-                    <span id="status-text">EN ESPERA</span>
+                    <span id="status-text">SISTEMA EN ESPERA</span>
                 </div>
                 <div class="h-1 w-64 bg-gray-800 rounded overflow-hidden mx-auto">
                     <div id="progress-bar" class="h-full bg-cyan-500 w-0 transition-all duration-200"></div>
@@ -303,30 +307,8 @@
     </div>
 
     <script>
-        // Configuración General
-        const cardCount = 8; 
-        const radius = 450;
-        
-        // Elementos DOM
-        const carousel = document.getElementById('carousel');
-        const statusText = document.getElementById('status-text');
-        const statusLight = document.getElementById('status-light');
-        const progressBar = document.getElementById('progress-bar');
-        const btnPlayPause = document.getElementById('btn-play-pause');
-        const iconPause = document.getElementById('icon-pause');
-        const iconPlay = document.getElementById('icon-play');
-
-        // Estado del Sistema
-        let currentAngle = 0;
-        let activeIndex = 0;
-        let isPaused = false;
-        let currentAudio = null;
-        let rotationTimeout = null;
-        let sequenceTimeout = null;
-
         // Base de Datos
-        // NOTA: He agregado el campo 'image'. 
-        // Si 'image' tiene valor, se mostrará. Si es null, muestra el placeholder SVG.
+        // NOTA: Movida al principio. Agrega aquí TODOS los elementos que necesites.
         const db = [
             { 
                 name: "Taylor S.", 
@@ -481,6 +463,29 @@
             }
         ];
 
+        // Configuración General Dinámica
+        const cardCount = db.length; // ¡Se ajusta a la cantidad de elementos en DB automáticamente!
+        // El radio crece un poco automáticamente si agregas muchísimos elementos
+        // para evitar que se amontonen hasta el punto de ser ilegibles.
+        const radius = Math.max(450, (cardCount * 120) / (2 * Math.PI)); 
+        
+        // Elementos DOM
+        const carousel = document.getElementById('carousel');
+        const statusText = document.getElementById('status-text');
+        const statusLight = document.getElementById('status-light');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const iconPause = document.getElementById('icon-pause');
+        const iconPlay = document.getElementById('icon-play');
+
+        // Estado del Sistema
+        let currentAngle = 0;
+        let activeIndex = 0;
+        let isPaused = false;
+        let currentAudio = null;
+        let rotationTimeout = null;
+        let sequenceTimeout = null;
+
         // --- INICIALIZACIÓN ---
 
         function initCarousel() {
@@ -619,7 +624,7 @@
 
             // 4. Si es manual y estaba pausado, no iniciar secuencia automática
             if (isPaused && isManual) {
-                statusText.innerText = "PAUSA";
+                statusText.innerText = "SISTEMA PAUSADO";
                 statusLight.className = "status-light paused";
                 return; 
             }
@@ -676,7 +681,7 @@
             if (isPaused) {
                 // Acción: PAUSAR
                 stopCurrentSequence(); // Detiene audio y temporizadores
-                statusText.innerText = "PAUSA";
+                statusText.innerText = "SISTEMA PAUSADO";
                 statusLight.className = "status-light paused";
                 iconPause.classList.add('hidden');
                 iconPlay.classList.remove('hidden');
