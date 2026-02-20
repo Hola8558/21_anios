@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrusel De 21 años...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            color: cyan;
+        }
+
+        /* Fondo Espacial Animado */
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            z-index: -2;
+        }
+
+        .stars {
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
+            animation: animStar 50s linear infinite;
+        }
+        
+        .stars:after {
+            content: " ";
+            position: absolute;
+            top: 2000px;
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: 1744px 122px #FFF , 134px 1321px #FFF , 92px 859px #FFF;
+        }
+
+        @keyframes animStar {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        /* Escenario 3D */
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .carousel {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Las Tarjetas */
+        .card {
+            position: absolute;
+            width: 240px;
+            height: 320px;
+            left: 50%;
+            top: 50%;
+            margin-left: -120px;
+            margin-top: -160px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 1px solid cyan;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: rgba(0, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            backface-visibility: visible; 
+            overflow: hidden;
+            transition: box-shadow 0.3s, border-color 0.3s, background 0.3s;
+        }
+
+        .card.active {
+            border: 2px solid #fff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), inset 0 0 20px rgba(0, 255, 255, 0.3);
+            background: rgba(0, 40, 80, 0.8);
+            z-index: 100;
+        }
+
+        .card-image-container {
+            width: 100%;
+            height: 70%;
+            overflow: hidden;
+            border-bottom: 1px solid cyan;
+            position: relative;
+        }
+
+        .card-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Esto asegura que la imagen llene el cuadro sin deformarse */
+            opacity: 0.9;
+        }
+
+        .card-content {
+            height: 30%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        /* Overlay de Inicio */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: cyan;
+        }
+
+        button.start-btn {
+            background: transparent;
+            color: cyan;
+            border: 2px solid cyan;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: inherit;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        button.start-btn:hover {
+            background: cyan;
+            color: black;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+        }
+
+        /* Controles y HUD */
+        .hud-container {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 200;
+            pointer-events: none; /* Dejar pasar clics en zonas vacías */
+        }
+
+        .control-panel {
+            pointer-events: auto;
+            background: rgba(0, 10, 20, 0.85);
+            border: 1px solid cyan;
+            border-radius: 16px;
+            padding: 15px 30px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .ctrl-btn {
+            background: transparent;
+            border: 1px solid cyan;
+            color: cyan;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px cyan;
+            transform: scale(1.1);
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.95);
+        }
+
+        .ctrl-btn-large {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            border: 2px solid cyan;
+        }
+
+        .status-light {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-right: 8px;
+        }
+        .status-light.on {
+            background-color: #0f0;
+            box-shadow: 0 0 8px #0f0;
+        }
+        .status-light.paused {
+            background-color: #ffaa00;
+            box-shadow: 0 0 8px #ffaa00;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Fondo de estrellas -->
+    <div class="space-bg">
+        <div class="stars"></div>
+    </div>
+
+    <!-- Pantalla de Inicio -->
+    <div id="start-overlay">
+        <h1 class="text-3xl md:text-5xl mb-6 font-bold tracking-widest text-center px-4" style="text-shadow: 0 0 10px cyan;">SISTEMA DE VISUALIZACIÓN</h1>
+        <p class="mb-8 text-center max-w-md text-cyan-200 opacity-80 font-light">Iniciando protocolo cum</p>
+        <button class="start-btn rounded" onclick="initExperience()">INICIAR</button>
+    </div>
+
+    <!-- Escena 3D -->
+    <div class="scene">
+        <div class="carousel" id="carousel">
+            <!-- Las tarjetas se generan con JS -->
+        </div>
+    </div>
+
+    <!-- Panel de Control Inferior -->
+    <div class="hud-container">
+        <div class="control-panel">
+            
+            <!-- Barra de estado y progreso -->
+            <div class="w-full text-center">
+                <div class="flex items-center justify-center mb-2 text-xs md:text-sm tracking-widest">
+                    <span id="status-light" class="status-light"></span>
+                    <span id="status-text">EN ESPERA</span>
+                </div>
+                <div class="h-1 w-64 bg-gray-800 rounded overflow-hidden mx-auto">
+                    <div id="progress-bar" class="h-full bg-cyan-500 w-0 transition-all duration-200"></div>
+                </div>
+            </div>
+
+            <!-- Botones de Control -->
+            <div class="controls">
+                <button class="ctrl-btn" onclick="manualPrev()" title="Anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                <button class="ctrl-btn ctrl-btn-large" onclick="togglePause()" id="btn-play-pause" title="Pausar/Reanudar">
+                    <!-- Icono Pause por defecto -->
+                    <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <!-- Icono Play (oculto) -->
+                    <svg id="icon-play" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+                
+                <button class="ctrl-btn" onclick="manualNext()" title="Siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración General
+        const cardCount = 8; 
+        const radius = 450;
+        
+        // Elementos DOM
+        const carousel = document.getElementById('carousel');
+        const statusText = document.getElementById('status-text');
+        const statusLight = document.getElementById('status-light');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const iconPause = document.getElementById('icon-pause');
+        const iconPlay = document.getElementById('icon-play');
+
+        // Estado del Sistema
+        let currentAngle = 0;
+        let activeIndex = 0;
+        let isPaused = false;
+        let currentAudio = null;
+        let rotationTimeout = null;
+        let sequenceTimeout = null;
+
+        // Base de Datos
+        // NOTA: He agregado el campo 'image'. 
+        // Si 'image' tiene valor, se mostrará. Si es null, muestra el placeholder SVG.
+        const db = [
+            { 
+                name: "Taylor S.", 
+                color: "#ff0055", 
+                audio: "audio/Taylor.mp3",
+                image: "Taylor.jpg" // IMAGEN SUBIDA
+            },
+            { 
+                name: "Lisa Blackpink", 
+                color: "#00ffaa", 
+                audio: "audio/lisa-blackpink.mp3",
+                image: "image/lisa-blackpink.jpg"
+            },
+            { 
+                name: "Skipper", 
+                color: "#ffffff", 
+                audio: "audio/skipper.mp3",
+                image: "image/skipper.jpg"
+            },
+            { 
+                name: "AnyaTaylor", 
+                color: "#ffaa00", 
+                audio: "audio/AnyaTay.mp3",
+                image: "image/AnyaTay.jpg"
+            },
+            { 
+                name: "Daphne-Bridgerton", 
+                color: "#aa00ff", 
+                audio: "audio/Daphne-Bridgerton.mp3",
+                image: "image/Daphne-Bridgerton.jpg"
+            },
+            { 
+                name: "AIME P3", 
+                color: "#aaaaaa", 
+                audio: "audio/aime.mp3",
+                image: "image/aime.jpg"
+            },
+            { 
+                name: "Cinamonroll", 
+                color: "#ffff00", 
+                audio: "audio/cinamonroll.mp3",
+                image: "image/cinamonroll.jpg"
+            },
+            { 
+                name: "Michaell Jackson", 
+                color: "#00aaff", 
+                audio: "audio/MJ.mp3",
+                image: "image/MJ.jpg"
+            },
+
+
+            { 
+                name: "Fede", 
+                color: "#00aaff", 
+                audio: "audio/fede.mp3",
+                image: "image/fede.jpg"
+            },
+            { 
+                name: "Queen", 
+                color: "#00aaff", 
+                audio: "audio/queen.mp3",
+                image: "image/queen.jpg"
+            },
+            { 
+                name: "Thomas Shellby", 
+                color: "#00aaff", 
+                audio: "audio/shelby.mp3",
+                image: "image/shelby.jpg"
+            },
+            { 
+                name: "Hugo Chaves", 
+                color: "#00aaff", 
+                audio: "audio/hugo-chaves.mp3",
+                image: "image/hugo-chaves.jpg"
+            },{ 
+                name: "Jesus", 
+                color: "#00aaff", 
+                audio: "audio/jesus.mp3",
+                image: "image/jesus.jpg"
+            }
+            ,{ 
+                name: "Belinda", 
+                color: "#00aaff", 
+                audio: "audio/belinda.mp3",
+                image: "image/belinda.jpg"
+            },
+            { 
+                name: "Lana del Rey", 
+                color: "#00aaff", 
+                audio: "audio/lanaRey.mp3",
+                image: "image/lanaRey.jpg"
+            },
+            { 
+                name: "Messi", 
+                color: "#00aaff", 
+                audio: "audio/messi.mp3",
+                image: "image/messi.jpg"
+            },
+            { 
+                name: "ArianaPequeña", 
+                color: "#00aaff", 
+                audio: "audio/ArianaPeque.mp3",
+                image: "image/ArianaPeque.jpg"
+            },
+            { 
+                name: "Claudia Sheimbaum", 
+                color: "#00aaff", 
+                audio: "audio/claudia.mp3",
+                image: "image/claudia.jpg"
+            },
+            { 
+                name: "Sabrina Carpeta", 
+                color: "#00aaff", 
+                audio: "audio/Sabrina.mp3",
+                image: "image/Sabrina.jpg"
+            },
+            { 
+                name: "Escobar", 
+                color: "#00aaff", 
+                audio: "audio/escobar.mp3",
+                image: "image/escobar.jpg"
+            },
+            { 
+                name: "KimJoungUn", 
+                color: "#00aaff", 
+                audio: "audio/KimJoungUn.mp3",
+                image: "image/KimJoungUn.jpg"
+            },
+            { 
+                name: "Fernanfloo", 
+                color: "#00aaff", 
+                audio: "audio/fernanfloo.mp3",
+                image: "image/fernanfloo.jpg"
+            },
+            { 
+                name: "Maduro", 
+                color: "#00aaff", 
+                audio: "audio/maduro.mp3",
+                image: "image/maduro.jpg"
+            },
+            { 
+                name: "Michaell Jackson", 
+                color: "#00aaff", 
+                audio: "audio/MJ.mp3",
+                image: "image/MJ.jpg"
+            },
+            { 
+                name: "Michaell Jackson", 
+                color: "#00aaff", 
+                audio: "audio/MJ.mp3",
+                image: "image/MJ.jpg"
+            }
+        ];
+
+        // --- INICIALIZACIÓN ---
+
+        function initCarousel() {
+            const angleStep = 360 / cardCount;
+
+            for (let i = 0; i < cardCount; i++) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const data = db[i % db.length];
+                
+                // Posición 3D
+                card.style.transform = `rotateY(${i * angleStep}deg) translateZ(${radius}px)`;
+                
+                // Contenido Visual: Imagen Real vs Placeholder
+                let visualContent;
+                if (data.image) {
+                    // Si hay imagen definida en DB
+                    visualContent = `<img src="${data.image}" alt="${data.name}" loading="lazy">`;
+                } else {
+                    // Placeholder SVG por defecto
+                    visualContent = `
+                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="grad${i}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#000;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:${data.color};stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grad${i})" />
+                            <circle cx="50%" cy="50%" r="30" stroke="cyan" stroke-width="2" fill="none" opacity="0.5"/>
+                            <line x1="0" y1="0" x2="100%" y2="100%" stroke="cyan" opacity="0.3" />
+                            <line x1="100%" y1="0" x2="0" y2="100%" stroke="cyan" opacity="0.3" />
+                        </svg>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="card-image-container">${visualContent}</div>
+                    <div class="card-content">${data.name}</div>
+                `;
+                
+                carousel.appendChild(card);
+            }
+        }
+
+        // --- SISTEMA DE AUDIO ---
+
+        function playAudio(audioSource) {
+            return new Promise((resolve) => {
+                // Detener anterior si existe
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+
+                statusText.innerText = "REPRODUCIENDO REGISTRO...";
+                statusLight.className = "status-light on";
+                
+                const audio = new Audio(audioSource);
+                currentAudio = audio; // Guardar referencia global
+
+                audio.onloadedmetadata = () => {
+                    progressBar.style.width = '100%';
+                    progressBar.style.transition = `width ${audio.duration}s linear`;
+                };
+
+                audio.onended = () => {
+                    statusLight.className = "status-light";
+                    progressBar.style.width = '0%';
+                    progressBar.style.transition = 'width 0.2s';
+                    currentAudio = null;
+                    resolve(true); // Terminado correctamente
+                };
+
+                // Fallback si falla
+                audio.onerror = () => {
+                    console.log(`Audio no encontrado: ${audioSource}. Simulando.`);
+                    statusText.innerText = "SIMULANDO AUDIO (FALTA ARCHIVO)...";
+                    progressBar.style.width = '100%';
+                    progressBar.style.transition = `width 3s linear`;
+                    
+                    // Guardamos el timer de simulación en currentAudio para poder cancelarlo si se pausa
+                    currentAudio = { 
+                        pause: () => clearTimeout(this.simTimer),
+                        simTimer: setTimeout(() => {
+                            statusLight.className = "status-light";
+                            progressBar.style.width = '0%';
+                            progressBar.style.transition = 'width 0.2s';
+                            currentAudio = null;
+                            resolve(true);
+                        }, 3000)
+                    };
+                };
+
+                audio.play().catch(e => {
+                    console.warn("Autoplay error:", e);
+                    resolve(true); // Continuar si falla
+                });
+            });
+        }
+
+        // --- LÓGICA DE SECUENCIA Y NAVEGACIÓN ---
+
+        function stopCurrentSequence() {
+            // Detener cualquier temporizador pendiente
+            clearTimeout(rotationTimeout);
+            clearTimeout(sequenceTimeout);
+            
+            // Detener audio y animaciones UI
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            statusLight.className = "status-light";
+        }
+
+        async function rotateToSlide(direction = 1, isManual = false) {
+            // 1. Detener lo que esté pasando
+            stopCurrentSequence();
+
+            // 2. Actualizar índices
+            // Si direction es 1 (Next), ángulo disminuye. Si es -1 (Prev), ángulo aumenta.
+            const angleStep = 360 / cardCount;
+            currentAngle -= (direction * angleStep);
+            
+            // Actualizar activeIndex manejando números negativos correctamente
+            activeIndex = (activeIndex + direction) % cardCount;
+            if (activeIndex < 0) activeIndex = cardCount - 1;
+
+            // 3. Aplicar rotación visual
+            carousel.style.transform = `rotateY(${currentAngle}deg)`;
+            updateActiveClasses();
+            statusText.innerText = "ROTANDO...";
+
+            // 4. Si es manual y estaba pausado, no iniciar secuencia automática
+            if (isPaused && isManual) {
+                statusText.innerText = "PAUSA";
+                statusLight.className = "status-light paused";
+                return; 
+            }
+
+            // 5. Iniciar secuencia de contenido
+            // Esperar rotación (1s CSS transition)
+            rotationTimeout = setTimeout(async () => {
+                await runSlideContent();
+            }, 1000);
+        }
+
+        async function runSlideContent() {
+            if (isPaused) return;
+
+            let dataIndex = Math.abs(activeIndex % db.length);
+            let currentData = db[dataIndex];
+
+            statusText.innerText = `ANALIZANDO: ${currentData.name}`;
+            
+            // Reproducir Audio (espera a que termine)
+            await playAudio(currentData.audio);
+
+            // Si se pausó DURANTE el audio, no continuar
+            if (isPaused) return;
+
+            // Pausa entre items
+            statusText.innerText = "ESPERANDO...";
+            sequenceTimeout = setTimeout(() => {
+                if (!isPaused) {
+                    rotateToSlide(1); // Siguiente automático
+                }
+            }, 1500);
+        }
+
+        function updateActiveClasses() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                let normalizedActiveIndex = Math.abs(activeIndex % cardCount);
+                if (index === normalizedActiveIndex) {
+                    card.classList.add('active');
+                    card.style.opacity = 1;
+                } else {
+                    card.classList.remove('active');
+                    card.style.opacity = 0.5;
+                }
+            });
+        }
+
+        // --- CONTROLES MANUALES ---
+
+        function togglePause() {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                // Acción: PAUSAR
+                stopCurrentSequence(); // Detiene audio y temporizadores
+                statusText.innerText = "PAUSA";
+                statusLight.className = "status-light paused";
+                iconPause.classList.add('hidden');
+                iconPlay.classList.remove('hidden');
+            } else {
+                // Acción: REANUDAR
+                iconPause.classList.remove('hidden');
+                iconPlay.classList.add('hidden');
+                statusText.innerText = "REANUDANDO...";
+                // Reiniciar el contenido del slide actual
+                runSlideContent();
+            }
+        }
+
+        function manualNext() {
+            // Forzar pausa momentánea visual si se hace clic rápido
+            rotateToSlide(1, true); 
+        }
+
+        function manualPrev() {
+            rotateToSlide(-1, true);
+        }
+
+        function initExperience() {
+            const overlay = document.getElementById('start-overlay');
+            overlay.style.opacity = 0;
+            setTimeout(() => overlay.style.display = 'none', 500);
+
+            // Iniciar primer slide
+            updateActiveClasses();
+            runSlideContent();
+        }
+
+        // Arrancar estructura
+        initCarousel();
+
+    </script>
+</body>
+</html>
